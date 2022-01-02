@@ -10,8 +10,8 @@ function getParamsFromTemplate(template: String) {
     return Array.from(new Set(template.match(re)));
 }
 
-const ParamItem = React.memo((props: { name: any; index: any; isCapturing: any; setCapturing: any; }) => {
-    const {name, index, isCapturing, setCapturing} = props;
+const ParamItem = React.memo((props: { name: any; index: any; isCapturing: any; setCapturing: any; onTextInput: any; }) => {
+    const {name, index, isCapturing, setCapturing, onTextInput} = props;
     const onClick = () => {
         if (isCapturing === index) {
             setCapturing(null);
@@ -21,7 +21,7 @@ const ParamItem = React.memo((props: { name: any; index: any; isCapturing: any; 
     };
     return (
         <div className="param-item">
-            <input type="text" value={name}/>
+            <input type="text" value={name} onChange={onTextInput} disabled={isCapturing !== index}/>
             <button onClick={onClick}>{isCapturing === index ? "Capturing" : "Capture"}</button>
         </div>
     );
@@ -45,6 +45,10 @@ function App() {
         setTemplate(template);
         // @ts-ignore
         setParams(getParamsFromTemplate(template));
+    }
+
+    const onTextInput = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+        setContent(e.target.value);
     }
 
     useEffect(() => {
@@ -103,7 +107,7 @@ function App() {
     return (
         <Draggable handle=".draggable-wrapper">
             <ResizableBox
-                width={500}
+                width={300}
                 height={500}
                 minConstraints={[100, 100]}
                 maxConstraints={[340, 700]}
@@ -129,7 +133,7 @@ function App() {
                 <div className="spacing-1">
                     {params.map((param, index) => {
                         return (
-                            <ParamItem name={param} index={index} setCapturing={setCapturing} isCapturing={capturing}/>)
+                            <ParamItem name={param} index={index} setCapturing={setCapturing} isCapturing={capturing} onTextInput={onTextInput}/>)
                     })}
                 </div>
                 <div className="spacing-1">
