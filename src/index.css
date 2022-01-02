@@ -50,6 +50,7 @@ code {
 .editable-div{
   width: 100%;
   height: 100%;
+  white-space: pre-line;
   overflow: scroll;
 }
 
@@ -133,4 +134,9 @@ code {
 .react-resizable-handle-s {
   bottom: 0;
   transform: rotate(45deg);
+}
+
+.spacing-1 {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }

@@ -1,5 +1,6 @@
 [
   {
-    "text": "Hello"
+    "name": "Hello",
+    "value": "function(param0, param1)\nlocal split = param0.value;\n\nlocal isNo = qualifiedclient.value == \"No\";\n\nparagraph1.add(\"hide\", !isNo)"
   }
 ]
