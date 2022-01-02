@@ -1,6 +1,14 @@
 [
   {
-    "name": "Hello",
-    "value": "function(param0, param1)\nlocal split = param0.value;\n\nlocal isNo = qualifiedclient.value == \"No\";\n\nparagraph1.add(\"hide\", !isNo)"
+    "name": "Show if yes",
+    "value": "function(param0, param1)\nlocal split = param1.value;\nlocal isYes =param0.value == \"Yes\";\n\nparam3.add(\"hide\", !isYes)"
+  },
+  {
+    "name": "Show if No",
+    "value": "function(param0, param1)\nlocal split = param1.value;\n\nlocal isNo = param0.value == \"No\";\n\nparam3.add(\"hide\", !isNo)"
+  },
+  {
+    "name": "Switch state",
+    "value": "function(param0)\nlocal isUS = param0.value == \"United States\";\n\nparam1.add(\"hide\", !isUS)\n+ param2.add(\"hide\", isUS)\n+ (if !isUS then \n        param3.add(\"value\", \"\") \n        + param4.add(\"value\", \"\") \n    else [])\n+ (if isUS then \n        param5.add(\"value\", \"\") \n        + param6.add(\"value\", \"\") \n    else [])"
   }
 ]

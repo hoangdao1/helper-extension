@@ -34,7 +34,7 @@ document.body.appendChild(iframe);
 
 function toggle(){
     if(iframe.style.width === "0px"){
-        iframe.style.width="350px";
+        iframe.style.width="500px";
     }
     else{
         iframe.style.width="0px";

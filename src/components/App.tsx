@@ -103,8 +103,8 @@ function App() {
     return (
         <Draggable handle=".draggable-wrapper">
             <ResizableBox
-                width={300}
-                height={200}
+                width={500}
+                height={500}
                 minConstraints={[100, 100]}
                 maxConstraints={[340, 700]}
             >
