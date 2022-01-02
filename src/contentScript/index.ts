@@ -4,7 +4,13 @@
 // Don't forget to change `matches` in manifest.json if you want to only change specific webpages
 createAnIframe();
 
-
+document.body.addEventListener('click', (e) => {
+  console.log(e);
+    chrome.runtime.sendMessage({
+        // @ts-ignore
+        content: e.target.innerText,
+  }, (response) => console.log(response));
+});
 
 export function createAnIframe() {
 
