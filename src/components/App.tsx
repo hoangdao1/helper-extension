@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
 import {ResizableBox} from "react-resizable";
 import Draggable from "react-draggable";
-import templates from './templates.json';
+// import templates from './templates.json';
 import SelectSearch, {fuzzySearch} from 'react-select-search';
+import axios from "axios";
 
 const re = /param\d/g;
 
@@ -35,6 +36,7 @@ function getTemplateWithParamsReplaced(template: String, params: any[]) {
 }
 
 function App() {
+    const [templates, setTemplates] = useState([]);
     const [content, setContent] = useState("");
     const [template, setTemplate] = useState("");
     const [params, setParams] = useState([]);
@@ -69,18 +71,18 @@ function App() {
 
 
     useEffect(() => {
-        document.addEventListener("paste", function (e: ClipboardEvent) {
-            e.preventDefault();
-
-            let pastedText: string = "";
-
-            if (e?.clipboardData?.getData) {
-                pastedText = e.clipboardData.getData("text/html");
-            }
-            let editableDiv = document.getElementById("kr-edit") as HTMLDivElement;
-            editableDiv.innerHTML = `${editableDiv?.innerHTML} ${pastedText}`;
-            editableDiv.scrollTop = editableDiv.scrollHeight;
-        });
+        // document.addEventListener("paste", function (e: ClipboardEvent) {
+        //     e.preventDefault();
+        //
+        //     let pastedText: string = "";
+        //
+        //     if (e?.clipboardData?.getData) {
+        //         pastedText = e.clipboardData.getData("text/html");
+        //     }
+        //     let editableDiv = document.getElementById("kr-edit") as HTMLDivElement;
+        //     editableDiv.innerHTML = `${editableDiv?.innerHTML} ${pastedText}`;
+        //     editableDiv.scrollTop = editableDiv.scrollHeight;
+        // });
 
         chrome.runtime.onMessage.addListener(
             function (request, sender, sendResponse) {
@@ -97,10 +99,14 @@ function App() {
             }
         );
 
-        return () => {
-            document.removeEventListener("paste", () => {
-            });
-        };
+        axios.get(
+            "https://patheon-adi.s3.ap-southeast-1.amazonaws.com/templates.json"
+            ).then(response => setTemplates(response.data)).catch(error => console.log(error));
+
+        // return () => {
+        //     document.removeEventListener("paste", () => {
+        //     });
+        // };
     }, []);
 
     // @ts-ignore
