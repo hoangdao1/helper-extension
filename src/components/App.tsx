@@ -121,7 +121,7 @@ function App() {
                         value={template}
                         search
                         filterOptions={fuzzySearch}
-                        placeholder="Select your country"
+                        placeholder="Select template"
                         // @ts-ignore
                         onChange={setTemplateAndParams}
                     />
