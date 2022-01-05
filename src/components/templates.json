@@ -1,14 +1,38 @@
 [
   {
     "name": "Show if yes",
-    "value": "function(param0, param1)\nlocal split = param1.value;\nlocal isYes =param0.value == \"Yes\";\n\nparam3.add(\"hide\", !isYes)"
+    "value": "function(param0, param1)\nlocal split = param1.value;\nlocal isYes = param0.value == \"Yes\";\n\nparam3.add(\"hide\", !isYes)"
+  },
+  {
+    "name": "Show and Clear if Yes",
+    "value": "function(param0, split1)\nlocal split = split1.value;\nlocal isYes = param0.value == \"Yes\";\n\nparam1.add(\"hide\", !isYes)\n+ (if !isYes then param2.add(\"value\", \"\") else [])"
   },
   {
     "name": "Show if No",
     "value": "function(param0, param1)\nlocal split = param1.value;\n\nlocal isNo = param0.value == \"No\";\n\nparam3.add(\"hide\", !isNo)"
   },
   {
+    "name": "Show and Clear if No",
+    "value": "function(param0, split1)\nlocal split = split1.value;\nlocal isNo = param0.value == \"No\";\n\nparam1.add(\"hide\", !isNo)\n+ (if !isNo then param2.add(\"value\", \"\") else [])"
+  },
+  {
     "name": "Switch state",
     "value": "function(param0)\nlocal isUS = param0.value == \"United States\";\n\nparam1.add(\"hide\", !isUS)\n+ param2.add(\"hide\", isUS)\n+ (if !isUS then \n        param3.add(\"value\", \"\") \n        + param4.add(\"value\", \"\") \n    else [])\n+ (if isUS then \n        param5.add(\"value\", \"\") \n        + param6.add(\"value\", \"\") \n    else [])"
+  },
+  {
+    "name": "Multiple constraints",
+    "value": "function(param0)\nlocal getState = function(allFunctions, init) std.foldl(function(state, func) func(state), allFunctions, init);\n\nlocal purge = function(arr, elements)\nstd.filter(function(ele) !std.member(elements, ele), arr);\n\nlocal contains = function(arr, elements)\nif std.length(arr) == 0 then false else\nstd.length(std.filter(function(item) std.member(elements, item), arr)) > 0;\n\nlocal endWith = function(arr, elements)\nif std.length(arr) == 0 then false else\nstd.length(std.filter(function(item) arr[std.length(arr) - 1] == item, elements)) > 0;\n\nlocal initState = {};\n\nlocal rule1 = function(state)\nif then {} else {};\n\nlocal finalState = getState([rule1], initState);\n\nif finalState.value != null then param1.add(\"value\", finalState.value) else []"
+  },
+  {
+    "name": "Merge Name",
+    "value": "function(firstName, middleName, lastName, suffix)\n\nlocal wrap = function(s) if s == '' then '' else s + ' ';\n\nlocal fullName = wrap(firstName.value) + wrap(middleName.value) + wrap(lastName.value) + wrap(suffix.value);\n\nlocal mergeName = mergedindvname.add('value', fullName);\n\nmergeName"
+  },
+  {
+    "name": "Combine Address",
+    "value": "function(street_contactinfo, city_contactinfo, state_contactinfo, permanentstate_parta_investorquestionnaire, zipcode_contactinfo, permanentzipcode_parta_investorquestionnaire, country7)\n\nlocal isNonUS = country7.value != \"United States\";\n\nlocal addressData = [\n        street_contactinfo.value, \n        city_contactinfo.value, \n        if isNonUS then state_contactinfo.value else permanentstate_parta_investorquestionnaire.value, \n        country7.value,\n        if isNonUS then zipcode_contactinfo.value else permanentzipcode_parta_investorquestionnaire.value\n    ];\n\nlocal combinedAddress = std.join(', ', std.filter(function(x) std.isString(x) && std.length(x) > 0, addressData));\n\ncombineaddress.add('value', combinedAddress)"
+  },
+  {
+    "name": "Date Validation",
+    "value": "function(param0, param1)\n\nlocal valid = std.isNumber(param1.value);\n\nlocal days30 = [\"April\", \"June\", \"September\", \"November\"];\n\nlocal days29 = [\"February\"];\n\nlocal month = param0.value;\nlocal maxDay = if std.member(days30, month) then\n        30\n    else if std.member(days29, month) then\n        29\n    else 31;\n\nif valid && param1.value == 0 then\n    param1.add('error', 'Must be greater than 0.') \nelse if (valid && param1.value > maxDay) then\n    param1.add('error', 'Date must not be greater than ' + std.toString(maxDay))\nelse \n    param1.add('error', null)"
   }
 ]
