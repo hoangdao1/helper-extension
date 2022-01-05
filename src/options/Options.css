@@ -41,3 +41,7 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.upload-notification {
+  color: green;
+}

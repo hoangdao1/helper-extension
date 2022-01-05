@@ -71,42 +71,20 @@ function App() {
 
 
     useEffect(() => {
-        // document.addEventListener("paste", function (e: ClipboardEvent) {
-        //     e.preventDefault();
-        //
-        //     let pastedText: string = "";
-        //
-        //     if (e?.clipboardData?.getData) {
-        //         pastedText = e.clipboardData.getData("text/html");
-        //     }
-        //     let editableDiv = document.getElementById("kr-edit") as HTMLDivElement;
-        //     editableDiv.innerHTML = `${editableDiv?.innerHTML} ${pastedText}`;
-        //     editableDiv.scrollTop = editableDiv.scrollHeight;
-        // });
-
         chrome.runtime.onMessage.addListener(
             function (request, sender, sendResponse) {
                 setContent(request.content);
-                // if (request.content === "hello")
-                //   sendResponse({farewell: "goodbye"});
-                // if (capturing != null) {
-                //     // @ts-ignore
-                //     const newParams = replaceParamsAtIndex(capturing, request.content);
-                //     console.log(newParams);
-                //     // @ts-ignore
-                //     setParams(newParams);
-                // }
             }
         );
 
-        axios.get(
-            "https://patheon-adi.s3.ap-southeast-1.amazonaws.com/templates.json"
-            ).then(response => setTemplates(response.data)).catch(error => console.log(error));
+        // axios.get(
+        //     "https://patheon-adi.s3.ap-southeast-1.amazonaws.com/templates.json"
+        //     ).then(response => setTemplates(response.data)).catch(error => console.log(error));
+        chrome.storage.local.get(['template'], function(result) {
+            const template = JSON.parse(result.template);
+            setTemplates(template);
+        });
 
-        // return () => {
-        //     document.removeEventListener("paste", () => {
-        //     });
-        // };
     }, []);
 
     // @ts-ignore

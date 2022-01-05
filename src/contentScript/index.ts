@@ -35,7 +35,7 @@ export function createAnIframe() {
     iframe.style.height = "100%";
     iframe.style.width = "0px";
     iframe.style.position = "fixed";
-    iframe.style.top = "70px";
+    iframe.style.top = "1px";
     iframe.style.right = "1px";
     iframe.style.border = "none";
     iframe.style.zIndex = "99";
