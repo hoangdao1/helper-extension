@@ -34,5 +34,9 @@
   {
     "name": "Date Validation",
     "value": "function(param0, param1)\n\nlocal valid = std.isNumber(param1.value);\n\nlocal days30 = [\"April\", \"June\", \"September\", \"November\"];\n\nlocal days29 = [\"February\"];\n\nlocal month = param0.value;\nlocal maxDay = if std.member(days30, month) then\n        30\n    else if std.member(days29, month) then\n        29\n    else 31;\n\nif valid && param1.value == 0 then\n    param1.add('error', 'Must be greater than 0.') \nelse if (valid && param1.value > maxDay) then\n    param1.add('error', 'Date must not be greater than ' + std.toString(maxDay))\nelse \n    param1.add('error', null)"
+  },
+  {
+    "name": "Exclusive Options",
+    "value": "function(param0)\n\nlocal op1 = [\"param1\"];\nlocal op2 = [\"param2\"];\nlocal op3 = [\"param3\"];\nlocal op4 = [\"param4\"];\n\nlocal purge = function(arr, elements)\n    std.filter(function(ele) !std.member(elements, ele), arr);\n\nlocal endWith = function(arr, elements)\n    if std.length(arr) == 0 then false else\n        std.length(std.filter(function(item) arr[std.length(arr) - 1] == item, elements)) > 0;\n\nlocal selectedValues = param0.value;\n\nif endWith(selectedValues, op4) then\n        param0.add(\"value\", op4)\n    else if endWith(selectedValues, op1 + op2 + op3) then\n        param0.add(\"value\", purge(selectedValues, op4))\n    else []\n"
   }
 ]
