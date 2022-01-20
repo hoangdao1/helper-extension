@@ -19,11 +19,31 @@ function Options() {
             });
         };
     };
+
+    const handleFormChange = (e: any) => {
+        const fileReader = new FileReader();
+        fileReader.readAsText(e.target.files[0], "UTF-8");
+        fileReader.onload = e => {
+            // @ts-ignore
+            const result = e.target.result;
+            // @ts-ignore
+            setFiles(result);
+            // @ts-ignore
+            chrome.storage.local.set({form: result}, function() {
+                setNoti('Form is set successfully');
+            });
+        };
+    };
     return (
         <div>
             <h1>Upload Template File </h1>
             <p className="upload-notification">{noti}</p>
             <input type="file" onChange={handleChange} />
+            <br />
+            {"uploaded file content -- " + files}
+            <h1>Upload Form Content File </h1>
+            <p className="upload-notification">{noti}</p>
+            <input type="file" onChange={handleFormChange} />
             <br />
             {"uploaded file content -- " + files}
         </div>

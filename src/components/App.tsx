@@ -11,6 +11,27 @@ function getParamsFromTemplate(template: String) {
     return Array.from(new Set(template.match(re)));
 }
 
+function getComponentsFromForm(obj: any) : any {
+    const objs = Object.entries(obj)
+        // @ts-ignore
+        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty('enum'))
+                // @ts-ignore
+                ? acc.concat({name: key, value: value})
+                    : (value != null && typeof value === 'object')
+                        ? acc.concat(getComponentsFromForm(value))
+                        : acc
+                , []);
+    return objs;
+}
+
+function getAllOptionsFromComponent(component: any) : any {
+    if (component != null && component.hasOwnProperty('enum')) {
+        const options = component["enum"];
+        const result = "local allOptions = [" + options.map((opt: any) => "\"" + opt + "\"").join(", ") + "]";
+        return result;
+    } else return "";
+}
+
 const ParamItem = React.memo((props: { name: any; index: any; isCapturing: any; setCapturing: any; onTextInput: any; }) => {
     const {name, index, isCapturing, setCapturing, onTextInput} = props;
     const onClick = () => {
@@ -42,6 +63,9 @@ function App() {
     const [params, setParams] = useState([]);
     // index of the param
     const [capturing, setCapturing] = useState(null);
+    const [components, setComponents] = useState([]);
+    const [component, setComponent] = useState("");
+
     const setTemplateAndParams = (template: String) => {
         // @ts-ignore
         setTemplate(template);
@@ -80,9 +104,13 @@ function App() {
         // axios.get(
         //     "https://patheon-adi.s3.ap-southeast-1.amazonaws.com/templates.json"
         //     ).then(response => setTemplates(response.data)).catch(error => console.log(error));
-        chrome.storage.local.get(['template'], function(result) {
+        chrome.storage.local.get(['template', 'form'], function(result) {
             const template = JSON.parse(result.template);
             setTemplates(template);
+
+            const form = JSON.parse(result.form);
+            const components = getComponentsFromForm(form);
+            setComponents(components);
         });
 
     }, []);
@@ -115,6 +143,17 @@ function App() {
                     />
                 </div>
                 <div className="spacing-1">
+                    <SelectSearch
+                        options={components}
+                        value={component}
+                        search
+                        filterOptions={fuzzySearch}
+                        placeholder="Select template"
+                        // @ts-ignore
+                        onChange={setComponent}
+                    />
+                </div>
+                <div className="spacing-1">
                     {params.map((param, index) => {
                         return (
                             <ParamItem name={param} index={index} setCapturing={setCapturing} isCapturing={capturing} onTextInput={onTextInput}/>)
@@ -123,6 +162,7 @@ function App() {
                 <div className="spacing-1">
                     <div className="editable-div" id="kr-edit" contentEditable>
                         {getTemplateWithParamsReplaced(template, params)}
+                        {getAllOptionsFromComponent(component)}
                     </div>
                 </div>
             </ResizableBox>
