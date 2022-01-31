@@ -53,7 +53,7 @@ code {
   height: 100%;
   white-space: pre-line;
   overflow: scroll;
-  caret-color: white;
+  caret-color: black;
 }
 
 .editable-div:focus{

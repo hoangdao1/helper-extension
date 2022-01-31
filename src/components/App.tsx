@@ -120,6 +120,12 @@ function App() {
         setClearFunc(funcBody);
     }
 
+    const setComponent2 = (comp: String) => {
+        console.log(comp);
+        // @ts-ignore
+        setComponent(comp);
+    }
+
     const setTemplateAndParams = (template: String) => {
         // @ts-ignore
         setTemplate(template);
@@ -152,6 +158,7 @@ function App() {
         chrome.runtime.onMessage.addListener(
             function (request, sender, sendResponse) {
                 setContent(request.content);
+                return true;
             }
         );
 
@@ -172,20 +179,21 @@ function App() {
 
     // @ts-ignore
     return (
-        <Draggable handle=".draggable-wrapper">
-            <ResizableBox
-                width={300}
-                height={500}
-                minConstraints={[100, 100]}
-                maxConstraints={[340, 700]}
-            >
-                <div className="draggable-wrapper">
-                    <div className="icon-wrapper">
-                        <div className="icon red"/>
-                        <div className="icon yellow"/>
-                        <div className="icon green"/>
-                    </div>
-                </div>
+        // <Draggable handle=".draggable-wrapper">
+        //     <ResizableBox
+        //         width={300}
+        //         height={500}
+        //         minConstraints={[100, 100]}
+        //         maxConstraints={[340, 700]}
+        //     >
+        <div>
+                {/*<div className="draggable-wrapper">*/}
+                {/*    <div className="icon-wrapper">*/}
+                {/*        <div className="icon red"/>*/}
+                {/*        <div className="icon yellow"/>*/}
+                {/*        <div className="icon green"/>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
                 <div className="spacing-1">
                     <SelectSearch
                         options={templates}
@@ -205,7 +213,7 @@ function App() {
                         filterOptions={fuzzySearch}
                         placeholder="Select template"
                         // @ts-ignore
-                        onChange={setComponent}
+                        onChange={setComponent2}
                     />
                 </div>
                 <div className="spacing-1">
@@ -225,8 +233,9 @@ function App() {
                         {clearFunc}
                     </div>
                 </div>
-            </ResizableBox>
-        </Draggable>
+        </div>
+        //     </ResizableBox>
+        // </Draggable>
     );
 }
 
