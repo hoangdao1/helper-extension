@@ -3,7 +3,6 @@ import {ResizableBox} from "react-resizable";
 import Draggable from "react-draggable";
 // import templates from './templates.json';
 import SelectSearch, {fuzzySearch} from 'react-select-search';
-import axios from "axios";
 
 const re = /param\d/g;
 
@@ -14,7 +13,10 @@ function getParamsFromTemplate(template: String) {
 function getComponentsFromForm(obj: any) : any {
     const objs = Object.entries(obj)
         // @ts-ignore
-        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty('enum'))
+        .reduce((acc, [key, value]) => (value != null &&
+                // @ts-ignore
+        ((key !== "items" && value.hasOwnProperty('enum')) || (value.hasOwnProperty('items') && value.items.hasOwnProperty("enum")))
+            )
                 // @ts-ignore
                 ? acc.concat({name: key, value: value})
                     : (value != null && typeof value === 'object')
@@ -27,9 +29,12 @@ function getComponentsFromForm(obj: any) : any {
 function getAllOptionsFromComponent(component: any) : any {
     if (component != null && component.hasOwnProperty('enum')) {
         const options = component["enum"];
-        const result = "local allOptions = [" + options.map((opt: any) => "\"" + opt + "\"").join(", ") + "]";
-        return result;
-    } else return "";
+        return "local allOptions = [\n" + options.map((opt: any) => "\"" + opt + "\"").join(", \n    ") + "\n]";
+    } else if (component != null && component.hasOwnProperty('items') && component.items.hasOwnProperty("enum")) {
+        const options = component.items["enum"];
+        return "local allOptions = [\n" + options.map((opt: any) => "\"" + opt + "\"").join(", \n    ") + "\n]";
+    }
+    else return "";
 }
 
 const ParamItem = React.memo((props: { name: any; index: any; isCapturing: any; setCapturing: any; onTextInput: any; }) => {
@@ -56,6 +61,45 @@ function getTemplateWithParamsReplaced(template: String, params: any[]) {
     }, template);
 }
 
+function getCompFromForm(compName: any, fullForm: any): Array<any> {
+    const objs = Object.entries(fullForm)
+        // @ts-ignore
+        .reduce((acc, [key, value]) => (key === compName)
+                // @ts-ignore
+                ? acc.concat(value)
+                : (value != null && typeof value === 'object')
+                    // @ts-ignore
+                    ? acc.concat(getCompFromForm(compName, value))
+                    : acc
+            , []);
+    return objs;
+}
+
+function getAllInputFromComp(component: any) : any {
+    const objs = Object.entries(component)
+        // @ts-ignore
+        .reduce((acc, [key, value]) => (value != null && (value['type'] === 'string' || value['type'] === 'array'))
+                // @ts-ignore
+                ? acc.concat({name: key, value: value})
+                : (value != null && typeof value === 'object')
+                    ? acc.concat(getAllInputFromComp(value))
+                    : acc
+            , []);
+    return objs;
+}
+
+function getClearFuncFromComponent(compName: any, fullForm: any) {
+    console.log(compName);
+    console.log(fullForm);
+    const comps = getCompFromForm(compName, fullForm);
+    if (comps.length > 0) {
+        const comp = comps[0];
+        const inputs = getAllInputFromComp(comp);
+        const main = inputs.map((item: any) => item.name).join(".add('value', '') +\n    ");
+        return "local clear = " + main + ".add('value', '');";
+    } else return "";
+}
+
 function App() {
     const [templates, setTemplates] = useState([]);
     const [content, setContent] = useState("");
@@ -65,6 +109,16 @@ function App() {
     const [capturing, setCapturing] = useState(null);
     const [components, setComponents] = useState([]);
     const [component, setComponent] = useState("");
+    const [fullForm, setFullForm] = useState({});
+    const [compName, setCompName] = useState("");
+    const [clearFunc, setClearFunc] = useState("");
+
+    const onCompInput = (e: any) => setCompName(e.target.value);
+
+    const getClear = () => {
+        const funcBody = getClearFuncFromComponent(compName, fullForm);
+        setClearFunc(funcBody);
+    }
 
     const setTemplateAndParams = (template: String) => {
         // @ts-ignore
@@ -111,6 +165,7 @@ function App() {
             const form = JSON.parse(result.form);
             const components = getComponentsFromForm(form);
             setComponents(components);
+            setFullForm(form);
         });
 
     }, []);
@@ -154,6 +209,10 @@ function App() {
                     />
                 </div>
                 <div className="spacing-1">
+                    <input type="text" value={compName} onChange={onCompInput}/>
+                    <button onClick={getClear}>Get Clear</button>
+                </div>
+                <div className="spacing-1">
                     {params.map((param, index) => {
                         return (
                             <ParamItem name={param} index={index} setCapturing={setCapturing} isCapturing={capturing} onTextInput={onTextInput}/>)
@@ -163,6 +222,7 @@ function App() {
                     <div className="editable-div" id="kr-edit" contentEditable>
                         {getTemplateWithParamsReplaced(template, params)}
                         {getAllOptionsFromComponent(component)}
+                        {clearFunc}
                     </div>
                 </div>
             </ResizableBox>
