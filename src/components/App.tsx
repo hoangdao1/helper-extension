@@ -96,8 +96,15 @@ function getClearFuncFromComponent(compName: any, fullForm: any) {
         const comp = comps[0];
         const inputs = getAllInputFromComp(comp);
         const main = inputs.map((item: any) => item.name).join(".add('value', '') +\n    ");
-        return "local clear = " + main + ".add('value', '');";
+        return "local clear = if cond then \n" + main + ".add('value', '') + \n else [];";
     } else return "";
+}
+
+function componentsToString(components: any) {
+    return components.map((item: any)  => ({
+        name: item.name,
+            value: JSON.stringify(item.value)
+    }));
 }
 
 function App() {
@@ -112,23 +119,28 @@ function App() {
     const [fullForm, setFullForm] = useState({});
     const [compName, setCompName] = useState("");
     const [clearFunc, setClearFunc] = useState("");
+    const [textContent, setTextContent] = useState("");
 
     const onCompInput = (e: any) => setCompName(e.target.value);
 
     const getClear = () => {
         const funcBody = getClearFuncFromComponent(compName, fullForm);
         setClearFunc(funcBody);
+        setTextContent(funcBody);
     }
 
     const setComponent2 = (comp: String) => {
         console.log(comp);
         // @ts-ignore
         setComponent(comp);
+        setTextContent(getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component));
     }
 
     const setTemplateAndParams = (template: String) => {
         // @ts-ignore
         setTemplate(template);
+        // @ts-ignore
+        setTextContent(getTemplateWithParamsReplaced(template, params));
         // @ts-ignore
         setParams(getParamsFromTemplate(template));
     }
@@ -170,7 +182,7 @@ function App() {
             setTemplates(template);
 
             const form = JSON.parse(result.form);
-            const components = getComponentsFromForm(form);
+            const components = componentsToString(getComponentsFromForm(form));
             setComponents(components);
             setFullForm(form);
         });
@@ -228,9 +240,10 @@ function App() {
                 </div>
                 <div className="spacing-1">
                     <div className="editable-div" id="kr-edit" contentEditable>
-                        {getTemplateWithParamsReplaced(template, params)}
-                        {getAllOptionsFromComponent(component)}
-                        {clearFunc}
+                        {/*{getTemplateWithParamsReplaced(template, params)}*/}
+                        {/*{getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component)}*/}
+                        {/*{clearFunc}*/}
+                        {textContent}
                     </div>
                 </div>
         </div>

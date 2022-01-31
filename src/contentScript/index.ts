@@ -7,7 +7,7 @@ document.body.addEventListener('click', (e) => {
     chrome.runtime.sendMessage({
         // @ts-ignore
         content: e.target.innerText,
-  }, (response) => console.log(response));
+  });
 });
 
 document.addEventListener('paste', (event) => {
@@ -17,11 +17,15 @@ document.addEventListener('paste', (event) => {
         chrome.runtime.sendMessage({
             // @ts-ignore
             content: paste,
-        }, (response) => console.log(response));
+        });
     }
 });
 
 export function createAnIframe(elmnt: any) {
+
+    const closeBtn = document.getElementById("close-btn");
+    // @ts-ignore
+    closeBtn.onclick = toggle;
 
     chrome.runtime.onMessage.addListener(function (msg, sender) {
         if (msg === "toggle") {
@@ -59,8 +63,8 @@ export function createAnIframe(elmnt: any) {
     function toggle() {
         if (elmnt.style.display === "none") {
             elmnt.style.display = "block";
-            elmnt.style.top = "0px";
-            elmnt.style.left = "85%";
+            elmnt.style.top = "20px";
+            elmnt.style.left = "80%";
         } else {
             elmnt.style.display = "none";
         }
@@ -75,7 +79,7 @@ export function createAnIframe(elmnt: any) {
 const str = "<!-- Draggable DIV -->\n" +
     "<div id=\"mydiv\">\n" +
     "  <!-- Include a header DIV with the same name as the draggable DIV, followed by \"header\" -->\n" +
-    "  <div id=\"mydivheader\">Click here to move</div>\n" +
+    "  <div id=\"mydivheader\">Click here to move <span id=\"close-btn\">X</span></div>\n" +
     // "  <p>Move</p>\n" +
     // "  <p>this</p>\n" +
     // "  <p>DIV</p>\n" +
@@ -86,15 +90,18 @@ mydiv.innerHTML = str;
 document.body.appendChild(mydiv);
 
 const cssStyles = "#mydiv {\n" +
-    "  position: absolute;\n" +
+    "  position: fixed;\n" +
     "  z-index: 9;\n" +
     "  background-color: #f1f1f1;\n" +
     "  border: 1px solid #d3d3d3;\n" +
     "  text-align: center;\n" +
     "}\n" +
+    "#close-btn { cursor: pointer; } \n" +
     "\n" +
     "#mydivheader {\n" +
     "  padding: 10px;\n" +
+    "  display: flex;\n" +
+    "  justify-content: space-between;\n" +
     "  cursor: move;\n" +
     "  z-index: 10;\n" +
     "  background-color: #2196F3;\n" +
