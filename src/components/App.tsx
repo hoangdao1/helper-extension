@@ -176,8 +176,12 @@ function App() {
         const refCompName1 = getUIRefCompBySimilarity(JSON.stringify(uiComp), refForm);
         const refName = refCompName1.length > 0 ? refCompName1[0] : "";
         console.log(refName);
+        if (refName === "") {
+            setSuggestion("Not found!");
+            return;
+        }
         const relatedRules = getRelatedRules(refName, refForm);
-        if (refName === "" || relatedRules.length == 0) {
+        if (relatedRules.length === 0) {
             setSuggestion("Not found!");
         } else {
             setSuggestion(relatedRules.map((rule: any) => rule.value).join("\n\n ------- \n\n"));
