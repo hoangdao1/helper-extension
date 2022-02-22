@@ -13,6 +13,8 @@
     "@types/react-dom": "^17.0.0",
     "axios": "^0.24.0",
     "fuse.js": "^6.5.3",
+    "fuzzy-search": "^3.2.1",
+    "leven": "^4.0.0",
     "react": "^17.0.2",
     "react-browser-extension-scripts": "4.0.10",
     "react-dom": "^17.0.2",

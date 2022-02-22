@@ -3,6 +3,7 @@ import {ResizableBox} from "react-resizable";
 import Draggable from "react-draggable";
 // import templates from './templates.json';
 import SelectSearch, {fuzzySearch} from 'react-select-search';
+import leven from 'leven';
 
 const re = /param\d/g;
 
@@ -75,6 +76,34 @@ function getCompFromForm(compName: any, fullForm: any): Array<any> {
     return objs;
 }
 
+function getUICompFromForm(compName: any, fullForm: any): Array<any> {
+    const objs = Object.entries(fullForm['namespaceFormSchemaMap']['main']['uiSchema'])
+        // @ts-ignore
+        .reduce((acc, [key, value]) => (key === compName)
+                // @ts-ignore
+                ? acc.concat(value)
+                : (value != null && typeof value === 'object')
+                    // @ts-ignore
+                    ? acc.concat(getCompFromForm(compName, value))
+                    : acc
+            , []);
+    return objs;
+}
+
+function getUIRefCompBySimilarity(compContent: any, refForm: any): Array<any> {
+    const objs = Object.entries(refForm['form']['namespaceFormSchemaMap']['main']['uiSchema'])
+        // @ts-ignore
+        .reduce((acc, [key, value]) => (leven(compContent, JSON.stringify(value) <= 0.2 * compContent.length))
+                // @ts-ignore
+                ? acc.concat(value)
+                : (value != null && typeof value === 'object')
+                    // @ts-ignore
+                    ? acc.concat(getCompFromForm(compName, value))
+                    : acc
+            , []);
+    return objs;
+}
+
 function getAllInputFromComp(component: any) : any {
     const objs = Object.entries(component)
         // @ts-ignore
@@ -107,6 +136,11 @@ function componentsToString(components: any) {
     }));
 }
 
+function getRelatedRules(compName: any, form: any) {
+    const rules = form['form']['rules'];
+    return rules.filter((item: any) => item['value'].includes(compName));
+}
+
 function App() {
     const [templates, setTemplates] = useState([]);
     const [content, setContent] = useState("");
@@ -118,15 +152,28 @@ function App() {
     const [component, setComponent] = useState("");
     const [fullForm, setFullForm] = useState({});
     const [compName, setCompName] = useState("");
+    const [refCompName, setRefCompName] = useState("");
     const [clearFunc, setClearFunc] = useState("");
     const [textContent, setTextContent] = useState("");
+    const [refForm, setRefForm] = useState({});
+    const [suggestion, setSuggestion] = useState("");
 
     const onCompInput = (e: any) => setCompName(e.target.value);
+
+    const onRefCompInput = (e: any) => setRefCompName(e.target.value);
 
     const getClear = () => {
         const funcBody = getClearFuncFromComponent(compName, fullForm);
         setClearFunc(funcBody);
         setTextContent(funcBody);
+    }
+
+    const getSuggestion = () => {
+        const uiComps = getUICompFromForm(refCompName, fullForm);
+        const uiComp = uiComps.length > 0 ? uiComps[0] : "";
+        const refCompName1 = getUIRefCompBySimilarity(JSON.stringify(uiComp), refForm);
+        const relatedRules = getRelatedRules(refCompName1, refForm);
+        setSuggestion(JSON.stringify(relatedRules));
     }
 
     const setComponent2 = (comp: String) => {
@@ -177,9 +224,12 @@ function App() {
         // axios.get(
         //     "https://patheon-adi.s3.ap-southeast-1.amazonaws.com/templates.json"
         //     ).then(response => setTemplates(response.data)).catch(error => console.log(error));
-        chrome.storage.local.get(['template', 'form'], function(result) {
+        chrome.storage.local.get(['template', 'form', 'refForm'], function(result) {
             const template = JSON.parse(result.template);
             setTemplates(template);
+
+            const refForm = JSON.parse(result.refForm);
+            setRefForm(refForm);
 
             const form = JSON.parse(result.form);
             const components = componentsToString(getComponentsFromForm(form));
@@ -233,6 +283,10 @@ function App() {
                     <button onClick={getClear}>Get Clear</button>
                 </div>
                 <div className="spacing-1">
+                    <input type="text" value={refCompName} onChange={onRefCompInput}/>
+                    <button onClick={getSuggestion}>Get Suggestion</button>
+                </div>
+                <div className="spacing-1">
                     {params.map((param, index) => {
                         return (
                             <ParamItem name={param} index={index} setCapturing={setCapturing} isCapturing={capturing} onTextInput={onTextInput}/>)
@@ -244,6 +298,7 @@ function App() {
                         {/*{getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component)}*/}
                         {/*{clearFunc}*/}
                         {textContent}
+                        {suggestion}
                     </div>
                 </div>
         </div>
