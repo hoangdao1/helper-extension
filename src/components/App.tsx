@@ -155,7 +155,7 @@ function App() {
     const [refCompName, setRefCompName] = useState("");
     const [clearFunc, setClearFunc] = useState("");
     const [textContent, setTextContent] = useState("");
-    const [refForm, setRefForm] = useState({});
+    const [refForm, setRefForm] = useState([]);
     const [suggestion, setSuggestion] = useState("");
 
     const onCompInput = (e: any) => setCompName(e.target.value);
@@ -169,22 +169,31 @@ function App() {
     }
 
     const getSuggestion = () => {
-        console.log(fullForm);
-        const uiComps = getUICompFromForm(refCompName, fullForm);
-        const uiComp = uiComps.length > 0 ? uiComps[0] : "";
-        // console.log(uiComp);
-        const refCompName1 = getUIRefCompBySimilarity(JSON.stringify(uiComp), refForm);
-        const refName = refCompName1.length > 0 ? refCompName1[0] : "";
-        console.log(refName);
-        if (refName === "") {
-            setSuggestion("Not found!");
-            return;
-        }
-        const relatedRules = getRelatedRules(refName, refForm);
-        if (relatedRules.length === 0) {
-            setSuggestion("Not found!");
-        } else {
-            setSuggestion(relatedRules.map((rule: any) => rule.value).join("\n\n ------- \n\n"));
+        if (refForm.length > 0) {
+            const result = refForm.map((ref) => {
+                // @ts-ignore
+                const refContent = JSON.parse(ref.content);
+                console.log(fullForm);
+                const uiComps = getUICompFromForm(refCompName, fullForm);
+                const uiComp = uiComps.length > 0 ? uiComps[0] : "";
+                // console.log(uiComp);
+                const refCompName1 = getUIRefCompBySimilarity(JSON.stringify(uiComp), refContent);
+                const refName = refCompName1.length > 0 ? refCompName1[0] : "";
+                console.log(refName);
+                if (refName === "") {
+                    return "";
+                }
+                const relatedRules = getRelatedRules(refName, refContent);
+                if (relatedRules.length === 0) {
+                    return "";
+                } else {
+                    return relatedRules.map((rule: any) => rule.value).join("\n\n ------- \n\n");
+                }
+            }).join("\n\n ------- \n\n");
+
+            if (result !== "") {
+                setSuggestion(result);
+            } else setSuggestion("Not found!");
         }
     }
 
@@ -241,7 +250,7 @@ function App() {
             setTemplates(template);
 
             console.log(result);
-            const refForm = JSON.parse(result.ref);
+            const refForm = result.ref;
             setRefForm(refForm);
 
             const form = JSON.parse(result.form);
