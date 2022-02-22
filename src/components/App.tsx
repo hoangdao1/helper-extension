@@ -93,7 +93,7 @@ function getUICompFromForm(compName: any, fullForm: any): Array<any> {
 function getUIRefCompBySimilarity(compContent: any, refForm: any): Array<any> {
     const objs = Object.entries(refForm)
         // @ts-ignore
-        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && leven(compContent, JSON.stringify(value)) <= 0.2 * compContent.length)
+        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && leven(compContent, JSON.stringify(value)) <= 0.5 * compContent.length)
                 // @ts-ignore
                 ? acc.concat(key)
                 : (value != null && typeof value === 'object')
@@ -177,7 +177,11 @@ function App() {
         const refName = refCompName1.length > 0 ? refCompName1[0] : "";
         console.log(refName);
         const relatedRules = getRelatedRules(refName, refForm);
-        setSuggestion(relatedRules.map((rule: any) => rule.value).join("\n\n ------- \n\n"));
+        if (refName === "" || relatedRules.length == 0) {
+            setSuggestion("Not found!");
+        } else {
+            setSuggestion(relatedRules.map((rule: any) => rule.value).join("\n\n ------- \n\n"));
+        }
     }
 
     const setComponent2 = (comp: String) => {
