@@ -77,28 +77,28 @@ function getCompFromForm(compName: any, fullForm: any): Array<any> {
 }
 
 function getUICompFromForm(compName: any, fullForm: any): Array<any> {
-    const objs = Object.entries(fullForm['namespaceFormSchemaMap']['main']['uiSchema'])
+    const objs = Object.entries(fullForm)
         // @ts-ignore
-        .reduce((acc, [key, value]) => (key === compName)
+        .reduce((acc, [key, value]) => (key === compName && value.hasOwnProperty("ui:formattedText"))
                 // @ts-ignore
                 ? acc.concat(value)
                 : (value != null && typeof value === 'object')
                     // @ts-ignore
-                    ? acc.concat(getCompFromForm(compName, value))
+                    ? acc.concat(getUICompFromForm(compName, value))
                     : acc
             , []);
     return objs;
 }
 
 function getUIRefCompBySimilarity(compContent: any, refForm: any): Array<any> {
-    const objs = Object.entries(refForm['form']['namespaceFormSchemaMap']['main']['uiSchema'])
+    const objs = Object.entries(refForm)
         // @ts-ignore
-        .reduce((acc, [key, value]) => (leven(compContent, JSON.stringify(value) <= 0.2 * compContent.length))
+        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && leven(compContent, JSON.stringify(value)) <= 0.2 * compContent.length)
                 // @ts-ignore
-                ? acc.concat(value)
+                ? acc.concat(key)
                 : (value != null && typeof value === 'object')
                     // @ts-ignore
-                    ? acc.concat(getCompFromForm(compName, value))
+                    ? acc.concat(getUIRefCompBySimilarity(compContent, value))
                     : acc
             , []);
     return objs;
@@ -169,11 +169,15 @@ function App() {
     }
 
     const getSuggestion = () => {
+        console.log(fullForm);
         const uiComps = getUICompFromForm(refCompName, fullForm);
         const uiComp = uiComps.length > 0 ? uiComps[0] : "";
+        // console.log(uiComp);
         const refCompName1 = getUIRefCompBySimilarity(JSON.stringify(uiComp), refForm);
-        const relatedRules = getRelatedRules(refCompName1, refForm);
-        setSuggestion(JSON.stringify(relatedRules));
+        const refName = refCompName1.length > 0 ? refCompName1[0] : "";
+        console.log(refName);
+        const relatedRules = getRelatedRules(refName, refForm);
+        setSuggestion(relatedRules.map((rule: any) => rule.value).join("\n\n ------- \n\n"));
     }
 
     const setComponent2 = (comp: String) => {
@@ -224,11 +228,12 @@ function App() {
         // axios.get(
         //     "https://patheon-adi.s3.ap-southeast-1.amazonaws.com/templates.json"
         //     ).then(response => setTemplates(response.data)).catch(error => console.log(error));
-        chrome.storage.local.get(['template', 'form', 'refForm'], function(result) {
+        chrome.storage.local.get(['template', 'form', 'ref'], function(result) {
             const template = JSON.parse(result.template);
             setTemplates(template);
 
-            const refForm = JSON.parse(result.refForm);
+            console.log(result);
+            const refForm = JSON.parse(result.ref);
             setRefForm(refForm);
 
             const form = JSON.parse(result.form);

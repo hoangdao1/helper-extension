@@ -21,6 +21,6 @@
     "128": "img/icon-128.png"
   },
   "options_page": "options.html",
-  "permissions": ["activeTab","storage"],
+  "permissions": ["activeTab","storage", "unlimitedStorage"],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

@@ -47,7 +47,7 @@ function Options() {
             // @ts-ignore
             setFiles(result);
             // @ts-ignore
-            chrome.storage.local.set({refForm: result}, function() {
+            chrome.storage.local.set({ref: result}, function() {
                 setRefNoti('Ref Form is set successfully');
             });
         };
@@ -57,6 +57,7 @@ function Options() {
         <div>
             <h1>Upload Template File </h1>
             <p className="upload-notification">{noti}</p>
+            <p className="upload-notification">{refNoti}</p>
             <input type="file" onChange={handleChange} />
             <br />
             {"uploaded file content -- " + files}
