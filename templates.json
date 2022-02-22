@@ -5,7 +5,7 @@
   },
   {
     "name": "Show and Clear if Yes",
-    "value": "function(param0, split1)\nlocal split = split1.value;\nlocal isYes = param0.value == \"Yes\";\n\nparam1.add(\"hide\", !isYes)\n+ (if !isYes then param2.add(\"value\", \"\") else [])"
+    "value": "function(param0, split1)\nlocal split = split1.value;\nlocal isYes = param0.value == \"Yes\";\n\nlocal clearOptions = if !isYes then param3.add(\"value\", \"\") else [];\n\nparam1.add(\"hide\", !isYes)\n+ clearOptions"
   },
   {
     "name": "Show if No",
@@ -21,7 +21,7 @@
   },
   {
     "name": "Multiple constraints",
-    "value": "function(param0)\nlocal getState = function(allFunctions, init) std.foldl(function(state, func) func(state), allFunctions, init);\n\nlocal purge = function(arr, elements)\nstd.filter(function(ele) !std.member(elements, ele), arr);\n\nlocal updateFields = function(obj, fields)\nstd.mapWithKey(\nfunction(field, value)\nif std.objectHas(fields, field) then fields[field] else value\n,obj);\n\nlocal contains = function(arr, elements)\nif std.length(arr) == 0 then false else\nstd.length(std.filter(function(item) std.member(elements, item), arr)) > 0;\n\nlocal endWith = function(arr, elements)\nif std.length(arr) == 0 then false else\nstd.length(std.filter(function(item) arr[std.length(arr) - 1] == item, elements)) > 0;\n\nlocal selectedValues = param0.value;\n\nlocal initState = {\n    value: selectedValues,\n    disabledOptions: [],\n};\n\nlocal rule1 = function(state)\n    if cond1 then updateFields(state, {\n        value: {},\n        disabledOptions: [],\n    }) else state;\n\nlocal finalState = getState([rule1], initState);\n\n(if finalState.value != selectedValues then param1.add(\"value\", finalState.value) else [])\n+ param0.add(\"disabledOptions\", finalState.disabledOptions)"
+    "value":"function(param0)\n\nlocal _ = {\n    getState: function(allFunctions, init) std.foldl(function(state, func) func(state), allFunctions, init),\n    purge: function(arr, elements) std.filter(function(ele) !std.member(elements, ele), arr),\n    purgeItem: function(value, arr) if std.member(arr, value) then \"\" else value,\n    updateFields: function(obj, fields) std.mapWithKey(function(field, value) if std.objectHas(fields, field) then fields[field] else value, obj),\n    contains: function(arr, elements) if std.length(arr) == 0 then false else std.length(std.filter(function(item) std.member(elements, item), arr)) > 0,\n    endWith: function(arr, elements) if std.length(arr) == 0 then false else std.length(std.filter(function(item) arr[std.length(arr) - 1] == item, elements)) > 0,\n}\n\nlocal selectedValues = param0.value;\n\nlocal initState = {\n    value: selectedValues,\n    disabledOptions: [],\n};\n\nlocal rule1 = function(state)\nif cond1 then _.updateFields(state, {\n    value: {},\n    disabledOptions: [],\n}) else state;\n\nlocal finalState = _.getState([rule1], initState);\n\n(if finalState.value != selectedValues then param0.add(\"value\", finalState.value) else [])\n+ param0.add(\"disabledOptions\", finalState.disabledOptions)"
   },
   {
     "name": "Merge Name",
@@ -36,7 +36,19 @@
     "value": "function(param0, param1)\n\nlocal valid = std.isNumber(param1.value);\n\nlocal days30 = [\"April\", \"June\", \"September\", \"November\"];\n\nlocal days29 = [\"February\"];\n\nlocal month = param0.value;\nlocal maxDay = if std.member(days30, month) then\n        30\n    else if std.member(days29, month) then\n        29\n    else 31;\n\nif valid && param1.value == 0 then\n    param1.add('error', 'Must be greater than 0.') \nelse if (valid && param1.value > maxDay) then\n    param1.add('error', 'Date must not be greater than ' + std.toString(maxDay))\nelse \n    param1.add('error', null)"
   },
   {
+    "name": "Birth Date Validation",
+    "value": "function(dob_indvsupplemental)\n\nif atd.compareToday(dob_indvsupplemental.value) > 0 then \n    dob_indvsupplemental.add('error', 'Must not be later than today.')\nelse \n    dob_indvsupplemental.add('error', null)"
+  },
+  {
     "name": "Exclusive Options",
     "value": "function(param0)\n\nlocal op1 = [\"param1\"];\nlocal op2 = [\"param2\"];\nlocal op3 = [\"param3\"];\nlocal op4 = [\"param4\"];\n\nlocal purge = function(arr, elements)\n    std.filter(function(ele) !std.member(elements, ele), arr);\n\nlocal endWith = function(arr, elements)\n    if std.length(arr) == 0 then false else\n        std.length(std.filter(function(item) arr[std.length(arr) - 1] == item, elements)) > 0;\n\nlocal selectedValues = param0.value;\n\nif endWith(selectedValues, op4) then\n        param0.add(\"value\", op4)\n    else if endWith(selectedValues, op1 + op2 + op3) then\n        param0.add(\"value\", purge(selectedValues, op4))\n    else []\n"
+  },
+  {
+    "name": "Commitment Amount Validation",
+    "value": "function(param0)\n\nlocal value = param0.value;\nlocal floor = std.floor(param0.value);\nlocal valid = std.isNumber(param0.value);\n\nif valid && value == 0 then\n    param0.add('error', 'Must be greater than $0.')\nelse if valid && value > floor then\n    param0.add(\"error\", \"Must not include cents.\")\nelse \n    param0.add('error', null)\n"
+  },
+  {
+    "name": "Repeatable",
+    "value": "function(repeatable10)\n\nlocal f = function(index, element)\n    local isIndi = element['radio11'].value == \"individual\";\n    local dob = element['dob_controlling_threeb_appendixvii'].value;\n    local e1 = if dob != \"\" && atd.compareToday(dob) > 0 then \"Must not be later than today\" else null;\n    local isOp3 = element['controllingrelationship_threeb_appendixvii'].value == \"op3\";\n    \n    repeatable10.add(['value', index, 'dob_controlling_threeb_appendixvii', 'hide'], !isIndi)\n    + repeatable10.add(['value', index, 'specifyfive_controllingrelationship_threeb_appendixvii', 'hide'], !isOp3)\n    + repeatable10.add(['value', index, 'dob_controlling_threeb_appendixvii', 'error'], e1);\n\nstd.flattenArrays(std.mapWithIndex(f, repeatable10.value))"
   }
 ]

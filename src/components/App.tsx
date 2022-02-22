@@ -140,9 +140,9 @@ function App() {
         // @ts-ignore
         setTemplate(template);
         // @ts-ignore
-        setTextContent(getTemplateWithParamsReplaced(template, params));
-        // @ts-ignore
         setParams(getParamsFromTemplate(template));
+        // @ts-ignore
+        setTextContent(getTemplateWithParamsReplaced(template, params));
     }
 
     const onTextInput = (e: { target: { value: React.SetStateAction<string>; }; }) => {
