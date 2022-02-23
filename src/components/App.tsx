@@ -4,6 +4,9 @@ import Draggable from "react-draggable";
 // import templates from './templates.json';
 import SelectSearch, {fuzzySearch} from 'react-select-search';
 import leven from 'leven';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+
 
 const re = /param\d/g;
 
@@ -320,7 +323,10 @@ function App() {
                         {/*{getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component)}*/}
                         {/*{clearFunc}*/}
                         {textContent}
-                        {suggestion}
+                        <SyntaxHighlighter language="javascript" style={docco}>
+                            {suggestion}
+                        </SyntaxHighlighter>
+
                     </div>
                 </div>
         </div>
