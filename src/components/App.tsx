@@ -6,7 +6,7 @@ import SelectSearch, {fuzzySearch} from 'react-select-search';
 import leven from 'leven';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-
+const fuzz = require('fuzzball');
 
 const re = /param\d/g;
 
@@ -96,7 +96,8 @@ function getUICompFromForm(compName: any, fullForm: any): Array<any> {
 function getUIRefCompBySimilarity(compContent: any, refForm: any): Array<any> {
     const objs = Object.entries(refForm)
         // @ts-ignore
-        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && leven(compContent, JSON.stringify(value)) <= 0.5 * compContent.length)
+        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && fuzz.token_sort_ratio(compContent, JSON.stringify(value)) >= 80)
+                // .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && leven(compContent, JSON.stringify(value)) <= 0.5 * compContent.length)
                 // @ts-ignore
                 ? acc.concat(key)
                 : (value != null && typeof value === 'object')
