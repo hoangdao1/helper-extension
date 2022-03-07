@@ -11,8 +11,8 @@ function Options() {
 
     useEffect(() => {
         chrome.storage.local.get('ref', function(result) {
-            const refForm = JSON.parse(result.ref);
-            if (refForm.length > 0) {
+            const refForm = result.ref;
+            if (refForm) {
                 setRefs(refForm);
             }
         });
@@ -117,11 +117,11 @@ function Options() {
             {/*{"uploaded file content -- " + files}*/}
         </div>
     );
-  // return (
-  //   <div className="App">
-  //      <p>In development phase...</p>
-  //   </div>
-  // );
+    // return (
+    //   <div className="App">
+    //      <p>In development phase...</p>
+    //   </div>
+    // );
 }
 
 export default Options;

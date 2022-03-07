@@ -3,7 +3,6 @@ import {ResizableBox} from "react-resizable";
 import Draggable from "react-draggable";
 // import templates from './templates.json';
 import SelectSearch, {fuzzySearch} from 'react-select-search';
-import leven from 'leven';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 const fuzz = require('fuzzball');
@@ -19,14 +18,14 @@ function getComponentsFromForm(obj: any) : any {
         // @ts-ignore
         .reduce((acc, [key, value]) => (value != null &&
                 // @ts-ignore
-        ((key !== "items" && value.hasOwnProperty('enum')) || (value.hasOwnProperty('items') && value.items.hasOwnProperty("enum")))
+                ((key !== "items" && value.hasOwnProperty('enum')) || (value.hasOwnProperty('items') && value.items.hasOwnProperty("enum")))
             )
                 // @ts-ignore
                 ? acc.concat({name: key, value: value})
-                    : (value != null && typeof value === 'object')
-                        ? acc.concat(getComponentsFromForm(value))
-                        : acc
-                , []);
+                : (value != null && typeof value === 'object')
+                    ? acc.concat(getComponentsFromForm(value))
+                    : acc
+            , []);
     return objs;
 }
 
@@ -93,16 +92,17 @@ function getUICompFromForm(compName: any, fullForm: any): Array<any> {
     return objs;
 }
 
-function getUIRefCompBySimilarity(compContent: any, refForm: any): Array<any> {
+function getUIRefCompBySimilarity(compContent: any, refForm: any, ratio: number): Array<any> {
+    const _ratio = ratio > 0 ? ratio : 80;
     const objs = Object.entries(refForm)
         // @ts-ignore
-        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && fuzz.token_sort_ratio(compContent, JSON.stringify(value)) >= 80)
+        .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && fuzz.token_sort_ratio(compContent, JSON.stringify(value)) >= _ratio)
                 // .reduce((acc, [key, value]) => (value != null && value.hasOwnProperty("ui:formattedText") && leven(compContent, JSON.stringify(value)) <= 0.5 * compContent.length)
                 // @ts-ignore
                 ? acc.concat(key)
                 : (value != null && typeof value === 'object')
                     // @ts-ignore
-                    ? acc.concat(getUIRefCompBySimilarity(compContent, value))
+                    ? acc.concat(getUIRefCompBySimilarity(compContent, value, _ratio))
                     : acc
             , []);
     return objs;
@@ -136,7 +136,7 @@ function getClearFuncFromComponent(compName: any, fullForm: any) {
 function componentsToString(components: any) {
     return components.map((item: any)  => ({
         name: item.name,
-            value: JSON.stringify(item.value)
+        value: JSON.stringify(item.value)
     }));
 }
 
@@ -161,6 +161,7 @@ function App() {
     const [textContent, setTextContent] = useState("");
     const [refForm, setRefForm] = useState([]);
     const [suggestion, setSuggestion] = useState("");
+    const [ratio, setRatio] = useState(80);
 
     const onCompInput = (e: any) => setCompName(e.target.value);
 
@@ -181,7 +182,7 @@ function App() {
                 const uiComps = getUICompFromForm(refCompName, fullForm);
                 const uiComp = uiComps.length > 0 ? uiComps[0] : "";
                 // console.log(uiComp);
-                const refCompName1 = getUIRefCompBySimilarity(JSON.stringify(uiComp), refContent);
+                const refCompName1 = getUIRefCompBySimilarity(JSON.stringify(uiComp), refContent, ratio);
                 const refName = refCompName1.length > 0 ? refCompName1[0] : "";
                 console.log(refName);
                 if (refName === "") {
@@ -205,7 +206,8 @@ function App() {
         console.log(comp);
         // @ts-ignore
         setComponent(comp);
-        setTextContent(getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component));
+        // @ts-ignore
+        setTextContent(getAllOptionsFromComponent(comp !== "" ? JSON.parse(comp) : comp));
     }
 
     const setTemplateAndParams = (template: String) => {
@@ -220,6 +222,8 @@ function App() {
     const onTextInput = (e: { target: { value: React.SetStateAction<string>; }; }) => {
         setContent(e.target.value);
     }
+
+    const onRatioInput = (e: any) => { setRatio(e.target.value); }
 
     useEffect(() => {
         if (capturing != null) {
@@ -275,61 +279,62 @@ function App() {
         //         maxConstraints={[340, 700]}
         //     >
         <div>
-                {/*<div className="draggable-wrapper">*/}
-                {/*    <div className="icon-wrapper">*/}
-                {/*        <div className="icon red"/>*/}
-                {/*        <div className="icon yellow"/>*/}
-                {/*        <div className="icon green"/>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-                <div className="spacing-1">
-                    <SelectSearch
-                        options={templates}
-                        value={template}
-                        search
-                        filterOptions={fuzzySearch}
-                        placeholder="Select template"
-                        // @ts-ignore
-                        onChange={setTemplateAndParams}
-                    />
-                </div>
-                <div className="spacing-1">
-                    <SelectSearch
-                        options={components}
-                        value={component}
-                        search
-                        filterOptions={fuzzySearch}
-                        placeholder="Select template"
-                        // @ts-ignore
-                        onChange={setComponent2}
-                    />
-                </div>
-                <div className="spacing-1">
-                    <input type="text" value={compName} onChange={onCompInput}/>
-                    <button onClick={getClear}>Get Clear</button>
-                </div>
-                <div className="spacing-1">
-                    <input type="text" value={refCompName} onChange={onRefCompInput}/>
-                    <button onClick={getSuggestion}>Get Suggestion</button>
-                </div>
-                <div className="spacing-1">
-                    {params.map((param, index) => {
-                        return (
-                            <ParamItem name={param} index={index} setCapturing={setCapturing} isCapturing={capturing} onTextInput={onTextInput}/>)
-                    })}
-                </div>
-                <div className="spacing-1">
-                    <div className="editable-div" id="kr-edit" contentEditable>
-                        {/*{getTemplateWithParamsReplaced(template, params)}*/}
-                        {/*{getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component)}*/}
-                        {/*{clearFunc}*/}
-                        {textContent}
-                        <SyntaxHighlighter language="javascript" style={docco}>
-                            {suggestion}
-                        </SyntaxHighlighter>
+            {/*<div className="draggable-wrapper">*/}
+            {/*    <div className="icon-wrapper">*/}
+            {/*        <div className="icon red"/>*/}
+            {/*        <div className="icon yellow"/>*/}
+            {/*        <div className="icon green"/>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
+            <div className="spacing-1">
+                <SelectSearch
+                    options={templates}
+                    value={template}
+                    search
+                    filterOptions={fuzzySearch}
+                    placeholder="Select template"
+                    // @ts-ignore
+                    onChange={setTemplateAndParams}
+                />
+            </div>
+            <div className="spacing-1">
+                <SelectSearch
+                    options={components}
+                    value={component}
+                    search
+                    filterOptions={fuzzySearch}
+                    placeholder="Select template"
+                    // @ts-ignore
+                    onChange={setComponent2}
+                />
+            </div>
+            <div className="spacing-1">
+                <input type="text" value={compName} onChange={onCompInput}/>
+                <button onClick={getClear}>Get Clear</button>
+            </div>
+            <div className="spacing-1">
+                <input type="text" value={refCompName} onChange={onRefCompInput}/>
+                <input type="number" value={ratio} onChange={onRatioInput} />
+                <button onClick={getSuggestion}>Get Suggestion</button>
+            </div>
+            <div className="spacing-1">
+                {params.map((param, index) => {
+                    return (
+                        <ParamItem name={param} index={index} setCapturing={setCapturing} isCapturing={capturing} onTextInput={onTextInput}/>)
+                })}
+            </div>
+            <div className="spacing-1">
+                <div className="editable-div" id="kr-edit" contentEditable>
+                    {/*{getTemplateWithParamsReplaced(template, params)}*/}
+                    {/*{getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component)}*/}
+                    {/*{clearFunc}*/}
+                    {textContent}
+                    <SyntaxHighlighter language="javascript" style={docco}>
+                        {suggestion}
+                    </SyntaxHighlighter>
 
-                    </div>
                 </div>
+            </div>
         </div>
         //     </ResizableBox>
         // </Draggable>
