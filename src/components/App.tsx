@@ -29,13 +29,20 @@ function getComponentsFromForm(obj: any) : any {
     return objs;
 }
 
-function getAllOptionsFromComponent(component: any) : any {
+function getEachOptions(compName: any, options: any) : any {
+    return options.map((opt: any, index: number) => "local opt" + (index + 1) + " = std.member(" + compName + ", \"" + opt + "\");")
+        .join("\n");
+}
+
+function getAllOptionsFromComponent(component: any, compName: any) : any {
     if (component != null && component.hasOwnProperty('enum')) {
         const options = component["enum"];
-        return "local allOptions = [\n" + options.map((opt: any) => "\"" + opt + "\"").join(", \n    ") + "\n]";
+        const eachOptions = getEachOptions(compName, options);
+        return "local allOptions = [\n" + options.map((opt: any) => "\"" + opt + "\"").join(", \n    ") + "\n];\n\n" + eachOptions;
     } else if (component != null && component.hasOwnProperty('items') && component.items.hasOwnProperty("enum")) {
         const options = component.items["enum"];
-        return "local allOptions = [\n" + options.map((opt: any) => "\"" + opt + "\"").join(", \n    ") + "\n]";
+        const eachOptions = getEachOptions(compName, options);
+        return "local allOptions = [\n" + options.map((opt: any) => "\"" + opt + "\"").join(", \n    ") + "\n];\n\n" + eachOptions;
     }
     else return "";
 }
@@ -203,11 +210,11 @@ function App() {
     }
 
     const setComponent2 = (comp: String) => {
-        console.log(comp);
+        const compName = components.find(item =>  item['value'] === comp);
         // @ts-ignore
         setComponent(comp);
         // @ts-ignore
-        setTextContent(getAllOptionsFromComponent(comp !== "" ? JSON.parse(comp) : comp));
+        setTextContent(getAllOptionsFromComponent(comp !== "" ? JSON.parse(comp) : comp, compName ? compName['name'] : ""));
     }
 
     const setTemplateAndParams = (template: String) => {
