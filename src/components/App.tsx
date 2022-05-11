@@ -30,7 +30,7 @@ function getComponentsFromForm(obj: any) : any {
 }
 
 function getEachOptions(compName: any, options: any) : any {
-    return options.map((opt: any, index: number) => "local opt" + (index + 1) + " = std.member(" + compName + ", \"" + opt + "\");")
+    return options.map((opt: any, index: number) => "local op" + (index + 1) + " = std.member(" + compName + ".value, \"" + opt + "\");")
         .join("\n");
 }
 
