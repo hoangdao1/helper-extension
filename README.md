@@ -5,6 +5,7 @@ A Chrome extension that helps you to note down the important things temporarily 
 
 
 # Installation 
+- Install nvm and node v16 with command: nvm use v16 (node version 16.14.0)
 - Clone the repository here:
 https://github.com/hoangdh143/helper-extension.git
 - Navigate to the folder, run ```npm install``` then ```npm run build```

@@ -5,6 +5,7 @@ import Draggable from "react-draggable";
 import SelectSearch, {fuzzySearch} from 'react-select-search';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import defaultSearch from "../options/DefaultSearch";
 const fuzz = require('fuzzball');
 
 const re = /param\d/g;
@@ -248,6 +249,11 @@ function App() {
         }
     }, [content]);
 
+    useEffect(() => {
+        // @ts-ignore
+        setTextContent(getTemplateWithParamsReplaced(template, params));
+    }, [params]);
+
 
     useEffect(() => {
         chrome.runtime.onMessage.addListener(
@@ -257,9 +263,6 @@ function App() {
             }
         );
 
-        // axios.get(
-        //     "https://patheon-adi.s3.ap-southeast-1.amazonaws.com/templates.json"
-        //     ).then(response => setTemplates(response.data)).catch(error => console.log(error));
         chrome.storage.local.get(['template', 'form', 'ref'], function(result) {
             const template = JSON.parse(result.template);
             setTemplates(template);
@@ -278,28 +281,14 @@ function App() {
 
     // @ts-ignore
     return (
-        // <Draggable handle=".draggable-wrapper">
-        //     <ResizableBox
-        //         width={300}
-        //         height={500}
-        //         minConstraints={[100, 100]}
-        //         maxConstraints={[340, 700]}
-        //     >
         <div>
-            {/*<div className="draggable-wrapper">*/}
-            {/*    <div className="icon-wrapper">*/}
-            {/*        <div className="icon red"/>*/}
-            {/*        <div className="icon yellow"/>*/}
-            {/*        <div className="icon green"/>*/}
-            {/*    </div>*/}
-            {/*</div>*/}
             <div className="spacing-1">
                 <SelectSearch
                     options={templates}
                     value={template}
                     search
                     filterOptions={fuzzySearch}
-                    placeholder="Select template"
+                    placeholder="Get template"
                     // @ts-ignore
                     onChange={setTemplateAndParams}
                 />
@@ -310,17 +299,18 @@ function App() {
                     value={component}
                     search
                     filterOptions={fuzzySearch}
-                    placeholder="Select template"
+                    // filterOptions={defaultSearch}
+                    placeholder="Get all options"
                     // @ts-ignore
                     onChange={setComponent2}
                 />
             </div>
             <div className="spacing-1">
-                <input type="text" value={compName} onChange={onCompInput}/>
+                <input type="text" placeholder="Get clear function" value={compName} onChange={onCompInput}/>
                 <button onClick={getClear}>Get Clear</button>
             </div>
             <div className="spacing-1">
-                <input type="text" value={refCompName} onChange={onRefCompInput}/>
+                <input type="text" placeholder="Get related functions" value={refCompName} onChange={onRefCompInput}/>
                 <input type="number" value={ratio} onChange={onRatioInput} />
                 <button onClick={getSuggestion}>Get Suggestion</button>
             </div>
@@ -332,14 +322,10 @@ function App() {
             </div>
             <div className="spacing-1">
                 <div className="editable-div" id="kr-edit" contentEditable>
-                    {/*{getTemplateWithParamsReplaced(template, params)}*/}
-                    {/*{getAllOptionsFromComponent(component !== "" ? JSON.parse(component) : component)}*/}
-                    {/*{clearFunc}*/}
                     {textContent}
                     <SyntaxHighlighter language="javascript" style={docco}>
                         {suggestion}
                     </SyntaxHighlighter>
-
                 </div>
             </div>
         </div>
