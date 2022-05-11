@@ -4,7 +4,8 @@ import Fuse from 'fuse.js';
 export default function defaultSearch(options: any) {
     const fuse = new Fuse(options, {
         keys: ['name', 'groupName', 'items.name'],
-        threshold: 0.0,
+        threshold: 0.3,
+        useExtendedSearch: true,
     });
 
     return (value: any) => {
@@ -12,6 +13,6 @@ export default function defaultSearch(options: any) {
             return options;
         }
 
-        return fuse.search(value).map(({ item }) => item);
+        return fuse.search("^" + value).map(({ item }) => item);
     };
 }

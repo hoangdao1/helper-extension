@@ -299,7 +299,6 @@ function App() {
                     value={component}
                     search
                     filterOptions={fuzzySearch}
-                    // filterOptions={defaultSearch}
                     placeholder="Get all options"
                     // @ts-ignore
                     onChange={setComponent2}
